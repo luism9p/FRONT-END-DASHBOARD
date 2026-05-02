@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="BarberPro - Panel de administración para tu barbería">
+    <title>BarberPro | Dashboard</title>
+    <!-- PrimeIcons -->
+    <link rel="stylesheet" href="https://unpkg.com/primeicons@7.0.0/primeicons.css">
+    <!-- FullCalendar CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css">
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+    <script>
+        const token = localStorage.getItem('barberia_token');
+        if (!token) {
+            window.location.replace('login.html');
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+</head>
+
+<body>
+    <!-- Route Guard: runs before anything renders -->
+    <script src="js/guard.js"></script>
+
+    <div class="layout-wrapper" id="layoutWrapper">
+        <!-- ===== TOPBAR ===== -->
+        <div class="layout-topbar">
+            <a href="dashboard.html" class="layout-topbar-logo">
+                <i class="pi pi-bolt"></i>
+                <span>BarberPro</span>
+            </a>
+
+            <button type="button" class="layout-topbar-button layout-menu-button" id="menuToggle"
+                aria-label="Abrir menú">
+                <i class="pi pi-bars"></i>
+            </button>
+
+            <button type="button" class="layout-topbar-button layout-topbar-menu-button" id="topbarMenuToggle"
+                aria-label="Menú usuario">
+                <i class="pi pi-ellipsis-v"></i>
+            </button>
+
+            <ul class="layout-topbar-menu" id="topbarMenu">
+                <li>
+                    <div class="topbar-user">
+                        <div class="topbar-user-avatar" id="userInitials">A</div>
+                        <div class="topbar-user-info">
+                            <span class="topbar-user-name" id="userName">Admin</span>
+                            <span class="topbar-user-role">Administrador</span>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <button type="button" class="btn-logout" id="logoutBtn">
+                        <i class="pi pi-sign-out"></i>
+                        Cerrar Sesión
+                    </button>
+                </li>
+            </ul>
+        </div>
+
+        <!-- ===== SIDEBAR ===== -->
+        <div class="layout-sidebar" id="sidebar">
+            <nav>
+                <ul class="layout-menu">
+                    <li class="menu-section-label">Principal</li>
+                    <li>
+                        <a href="#dashboard" class="menu-item active" data-view="dashboard">
+                            <i class="pi pi-home"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#citas" class="menu-item" data-view="citas">
+                            <i class="pi pi-calendar"></i>
+                            <span>Citas</span>
+                        </a>
+                    </li>
+
+                    <li class="menu-section-label">Gestión</li>
+                    <li>
+                        <a href="#servicios" class="menu-item" data-view="servicios">
+                            <i class="pi pi-list"></i>
+                            <span>Servicios</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#clientes" class="menu-item" data-view="clientes">
+                            <i class="pi pi-users"></i>
+                            <span>Clientes</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#barberos" class="menu-item" data-view="barberos">
+                            <i class="pi pi-user"></i>
+                            <span>Barberos</span>
+                        </a>
+                    </li>
+
+                    <li class="menu-section-label">Configuración</li>
+                    <li>
+                        <a href="#ajustes" class="menu-item" data-view="ajustes">
+                            <i class="pi pi-cog"></i>
+                            <span>Ajustes</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- ===== MAIN CONTENT ===== -->
+        <div class="layout-main-container">
+            <div class="layout-main">
+
+                <!-- VIEW: Dashboard -->
+                <section id="viewDashboard" class="view-section">
+                    <h2>Dashboard</h2>
+                    <!-- KPI Cards (Estadísticas Backend) -->
+                    <div class="kpi-grid"
+                        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+                        <!-- Tarjeta: Ingresos Totales -->
+                        <div class="kpi-card">
+                            <div class="kpi-info">
+                                <h3>Ingresos Totales</h3>
+                                <div class="kpi-value" id="stat-ingresos">$0.00</div>
+                                <div class="kpi-trend up"><i class="pi pi-money-bill"></i> este mes</div>
+                            </div>
+                            <div class="kpi-icon green"><i class="pi pi-dollar"></i></div>
+                        </div>
+
+                        <!-- Tarjeta: Citas Hoy -->
+                        <div class="kpi-card">
+                            <div class="kpi-info">
+                                <h3>Citas Hoy</h3>
+                                <div class="kpi-value" id="stat-citashoy">0</div>
+                                <div class="kpi-trend up"><i class="pi pi-calendar-plus"></i> para hoy</div>
+                            </div>
+                            <div class="kpi-icon blue"><i class="pi pi-calendar"></i></div>
+                        </div>
+
+                        <!-- Tarjeta: Confirmadas -->
+                        <div class="kpi-card">
+                            <div class="kpi-info">
+                                <h3>Confirmadas</h3>
+                                <div class="kpi-value" id="stat-confirmadas">0</div>
+                                <div class="kpi-trend up"><i class="pi pi-check-circle"></i> activas</div>
+                            </div>
+                            <div class="kpi-icon green"><i class="pi pi-check"></i></div>
+                        </div>
+
+                        <!-- Tarjeta: Pendientes -->
+                        <div class="kpi-card">
+                            <div class="kpi-info">
+                                <h3>Pendientes</h3>
+                                <div class="kpi-value" id="stat-pendientes">0</div>
+                                <div class="kpi-trend down"><i class="pi pi-clock"></i> por confirmar</div>
+                            </div>
+                            <div class="kpi-icon orange"><i class="pi pi-clock"></i></div>
+                        </div>
+
+                        <!-- Tarjeta: Canceladas -->
+                        <div class="kpi-card">
+                            <div class="kpi-info">
+                                <h3>Canceladas</h3>
+                                <div class="kpi-value" id="stat-canceladas">0</div>
+                                <div class="kpi-trend down"><i class="pi pi-times"></i> canceladas</div>
+                            </div>
+                            <div class="kpi-icon" style="background: #fef2f2; color: var(--red-500);"><i
+                                    class="pi pi-ban"></i></div>
+                        </div>
+                    </div>
+
+                    <!-- Filter Bar -->
+                    <div class="filter-bar">
+                        <span class="filter-label"><i class="pi pi-filter"></i> Filtros:</span>
+                        <button class="btn btn-sm btn-outline filter-btn active" data-filter="all">Todas</button>
+                        <button class="btn btn-sm btn-outline filter-btn" data-filter="today">Hoy</button>
+                        <button class="btn btn-sm btn-outline filter-btn" data-filter="confirmada">Confirmadas</button>
+                        <button class="btn btn-sm btn-outline filter-btn" data-filter="cancelada">Canceladas</button>
+                    </div>
+
+                    <!-- Calendar -->
+                    <div class="calendar-container">
+                        <div id="calendar"></div>
+                    </div>
+                </section>
+
+                <!-- ==============================================
+                     VISTA PRINCIPAL DE CITAS
+                =============================================== -->
+                <section id="viewCitas" class="view-section" style="display:none;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h2 style="margin: 0;">Gestión de Citas</h2>
+                        <div style="display: flex; gap: 1rem;">
+                            <button id="btnExportarExcel" class="btn btn-success"
+                                style="width: auto; padding: 0.5rem 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="pi pi-file-excel"></i> Exportar a Excel
+                            </button>
+                            <button id="btnExportarPDF" class="btn btn-danger"
+                                style="background-color: var(--red-500); border: none; color: white; width: auto; padding: 0.5rem 1rem; display: flex; align-items: center; gap: 0.5rem; border-radius: 4px; cursor: pointer;">
+                                <i class="pi pi-file-pdf"></i> Exportar a PDF
+                            </button>
+                            <button class="btn btn-primary" id="btnNuevaCita"
+                                style="width: auto; padding: 0.5rem 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="pi pi-plus"></i> Nueva Cita
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card" style="padding:0;">
+                        <div class="table-responsive" style="overflow-x:auto;">
+                            <table class="data-table" style="width:100%; border-collapse:collapse; text-align:left;">
+                                <thead>
+                                    <tr
+                                        style="border-bottom: 1px solid var(--surface-border); background-color: var(--surface-50);">
+                                        <th style="padding:1rem; color:var(--surface-900); font-weight:600;">Fecha</th>
+                                        <th style="padding:1rem; color:var(--surface-900); font-weight:600;">Hora</th>
+                                        <th style="padding:1rem; color:var(--surface-900); font-weight:600;">Cliente
+                                        </th>
+                                        <th style="padding:1rem; color:var(--surface-900); font-weight:600;">Barbero
+                                        </th>
+                                        <th style="padding:1rem; color:var(--surface-900); font-weight:600;">Servicio
+                                        </th>
+                                        <th style="padding:1rem; color:var(--surface-900); font-weight:600;">Estado</th>
+                                        <th
+                                            style="padding:1rem; color:var(--surface-900); font-weight:600; text-align:right;">
+                                            Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="citasTableBody">
+                                    <!-- Las filas se cargarán vía JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW: Servicios -->
+                <!-- ==============================================
+     1. VISTA PRINCIPAL DE SERVICIOS
+=============================================== -->
+                <section id="viewServicios" class="view-section" style="display:none;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h2 style="margin: 0;">Gestión de Servicios</h2>
+                        <button class="btn btn-primary" id="btnNuevoServicio"
+                            style="width: auto; padding: 0.5rem 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="pi pi-plus"></i> Nuevo Servicio
+                        </button>
+                    </div>
+
+                    <div class="card" style="padding:0;">
+                        <div class="table-responsive" style="overflow-x:auto;">
+                            <table class="data-table" style="width:100%; border-collapse:collapse; text-align:left;">
+                                <thead>
+                                    <tr
+                                        style="border-bottom: 1px solid var(--surface-border); background-color: var(--surface-50);">
+                                        <th style="padding:1rem; color:var(--surface-900); font-weight:600;">Nombre</th>
+                                        <th style="padding:1rem; color:var(--surface-900); font-weight:600;">Duración
+                                            (min)</th>
+                                        <th style="padding:1rem; color:var(--surface-900); font-weight:600;">Precio</th>
+                                        <th style="padding:1rem; color:var(--surface-900); font-weight:600;">Estado</th>
+                                        <th
+                                            style="padding:1rem; color:var(--surface-900); font-weight:600; text-align:right;">
+                                            Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="serviciosTableBody">
+                                    <!-- Las filas se cargarán vía JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ==============================================
+     2. MODAL DE CREACIÓN / EDICIÓN 
+     (Pegar al final del HTML, junto a otros modales)
+=============================================== -->
+                <div class="modal-overlay" id="servicioModal">
+                    <div class="modal" style="max-width:500px;">
+                        <div class="modal-header">
+                            <h3 id="servicioModalTitle"><i class="pi pi-briefcase"
+                                    style="margin-right:.5rem;color:var(--primary-color)"></i> Nuevo Servicio</h3>
+                            <button class="modal-close" id="servicioModalClose" aria-label="Cerrar"><i
+                                    class="pi pi-times"></i></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="servicioForm">
+                                <!-- Input oculto para manejar si es edición -->
+                                <input type="hidden" id="servicioId">
+
+                                <div class="form-group">
+                                    <label for="servicioNombre">Nombre del Servicio *</label>
+                                    <input type="text" id="servicioNombre" class="form-input" required
+                                        placeholder="Ej. Corte Clásico">
+                                </div>
+
+                                <div style="display:flex; gap:1rem;">
+                                    <div class="form-group" style="flex:1;">
+                                        <label for="servicioDuracion">Duración (minutos) *</label>
+                                        <input type="number" id="servicioDuracion" class="form-input" required min="5"
+                                            step="5" placeholder="30">
+                                    </div>
+                                    <div class="form-group" style="flex:1;">
+                                        <label for="servicioPrecio">Precio ($) *</label>
+                                        <input type="number" id="servicioPrecio" class="form-input" required min="0"
+                                            step="0.01" placeholder="15.00">
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                                        <input type="checkbox" id="servicioActivo" checked
+                                            style="accent-color: var(--primary-color); width: 18px; height: 18px;">
+                                        <span style="font-weight:500; color:var(--surface-900);">Servicio Activo</span>
+                                    </label>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary btn-sm" id="servicioModalCancel">Cancelar</button>
+                            <button class="btn btn-primary btn-sm" form="servicioForm" type="submit"
+                                id="servicioModalSave" style="width:auto;"><i class="pi pi-save"></i> Guardar</button>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- ==============================================
+                     VISTA PRINCIPAL DE CLIENTES
+                =============================================== -->
+                <section id="viewClientes" class="view-section" style="display:none;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h2 style="margin: 0;">Gestión de Clientes</h2>
+                        <button class="btn btn-primary" id="btnNuevoCliente"
+                            style="width: auto; padding: 0.5rem 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="pi pi-plus"></i> Nuevo Cliente
+                        </button>
+                    </div>
+
+                    <div class="card" style="padding:0;">
+                        <div class="table-responsive" style="overflow-x:auto;">
+                            <table class="data-table" style="width:100%; border-collapse:collapse; text-align:left;">
+                                <thead>
+                                    <tr
+                                        style="border-bottom: 1px solid var(--surface-border); background-color: var(--surface-50);">
+                                        <th style="padding:1rem; color:var(--surface-900); font-weight:600;">Nombre</th>
+                                        <th style="padding:1rem; color:var(--surface-900); font-weight:600;">Teléfono
+                                        </th>
+                                        <th style="padding:1rem; color:var(--surface-900); font-weight:600;">Email</th>
+                                        <th style="padding:1rem; color:var(--surface-900); font-weight:600;">Notas</th>
+                                        <th
+                                            style="padding:1rem; color:var(--surface-900); font-weight:600; text-align:right;">
+                                            Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="clientesTableBody">
+                                    <!-- Las filas se cargarán vía JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ==============================================
+                     VISTA PRINCIPAL DE BARBEROS
+                =============================================== -->
+                <section id="viewBarberos" class="view-section" style="display:none;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h2 style="margin: 0;">Gestión de Barberos</h2>
+                        <button class="btn btn-primary" id="btnNuevoBarbero"
+                            style="width: auto; padding: 0.5rem 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="pi pi-plus"></i> Nuevo Barbero
+                        </button>
+                    </div>
+
+                    <div class="card" style="padding:0;">
+                        <div class="table-responsive" style="overflow-x:auto;">
+                            <table class="data-table" style="width:100%; border-collapse:collapse; text-align:left;">
+                                <thead>
+                                    <tr
+                                        style="border-bottom: 1px solid var(--surface-border); background-color: var(--surface-50);">
+                                        <th style="padding:1rem; color:var(--surface-900); font-weight:600;">Nombre</th>
+                                        <th style="padding:1rem; color:var(--surface-900); font-weight:600;">Teléfono
+                                        </th>
+                                        <th style="padding:1rem; color:var(--surface-900); font-weight:600;">Email</th>
+                                        <th style="padding:1rem; color:var(--surface-900); font-weight:600;">
+                                            Especialidad</th>
+                                        <th style="padding:1rem; color:var(--surface-900); font-weight:600;">Estado</th>
+                                        <th
+                                            style="padding:1rem; color:var(--surface-900); font-weight:600; text-align:right;">
+                                            Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="barberosTableBody">
+                                    <!-- Las filas se cargarán vía JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ==============================================
+                     VISTA PRINCIPAL DE AJUSTES
+                =============================================== -->
+                <section id="viewAjustes" class="view-section" style="display:none;">
+                    <div style="margin-bottom: 1.5rem;">
+                        <h2 style="margin: 0;">Configuración del Negocio</h2>
+                    </div>
+
+                    <div class="card">
+                        <form id="ajustesForm">
+                            <input type="hidden" id="ajustesId">
+
+                            <div
+                                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+                                <!-- Columna 1 -->
+                                <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                                    <div class="form-group" style="margin:0;">
+                                        <label for="ajustesNombre">Nombre Comercial *</label>
+                                        <input type="text" id="ajustesNombre" class="form-input" required
+                                            placeholder="Ej. Barbería Central">
+                                    </div>
+                                    <div class="form-group" style="margin:0;">
+                                        <label for="ajustesTelefono">Teléfono de Contacto</label>
+                                        <input type="tel" id="ajustesTelefono" class="form-input"
+                                            placeholder="Ej. +34 600 000 000">
+                                    </div>
+                                    <div class="form-group" style="margin:0;">
+                                        <label for="ajustesDireccion">Dirección</label>
+                                        <input type="text" id="ajustesDireccion" class="form-input"
+                                            placeholder="Ej. Calle Principal 123">
+                                    </div>
+                                </div>
+
+                                <!-- Columna 2 -->
+                                <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                                    <div style="display: flex; gap: 1rem;">
+                                        <div class="form-group" style="flex: 1; margin:0;">
+                                            <label for="ajustesApertura">Horario Apertura</label>
+                                            <input type="time" id="ajustesApertura" class="form-input" required>
+                                        </div>
+                                        <div class="form-group" style="flex: 1; margin:0;">
+                                            <label for="ajustesCierre">Horario Cierre</label>
+                                            <input type="time" id="ajustesCierre" class="form-input" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-group" style="margin:0;">
+                                        <label for="ajustesIntervalo">Intervalo de Turno (Minutos)</label>
+                                        <input type="number" id="ajustesIntervalo" class="form-input" min="5" step="5"
+                                            required placeholder="Ej. 30">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div
+                                style="display: flex; justify-content: flex-end; border-top: 1px solid var(--surface-border); padding-top: 1.5rem;">
+                                <button class="btn btn-primary" type="submit" id="btnGuardarAjustes"
+                                    style="width:auto; padding: 0.75rem 2rem;">
+                                    <i class="pi pi-save" style="margin-right: 0.5rem;"></i> Guardar Cambios
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Footer -->
+            <footer class="layout-footer">
+                BarberPro &copy; 2026 — Powered with by Exoticos
+            </footer>
+        </div>
+
+        <!-- Mobile Overlay Mask -->
+        <div class="layout-mask" id="layoutMask"></div>
+    </div>
+
+    <!-- ===== MODAL: Appointment Detail ===== -->
+    <div class="modal-overlay" id="appointmentModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3><i class="pi pi-calendar" style="margin-right:.5rem;color:var(--primary-color)"></i> Detalle de Cita
+                </h3>
+                <button class="modal-close" id="modalClose" aria-label="Cerrar"><i class="pi pi-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="detail-row">
+                    <div class="detail-icon"><i class="pi pi-user"></i></div>
+                    <div>
+                        <div class="detail-label">Cliente</div>
+                        <div class="detail-value" id="modalClient">—</div>
+                    </div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-icon"><i class="pi pi-list"></i></div>
+                    <div>
+                        <div class="detail-label">Servicio</div>
+                        <div class="detail-value" id="modalService">—</div>
+                    </div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-icon"><i class="pi pi-calendar"></i></div>
+                    <div>
+                        <div class="detail-label">Fecha y Hora</div>
+                        <div class="detail-value" id="modalDate">—</div>
+                    </div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-icon"><i class="pi pi-user"></i></div>
+                    <div>
+                        <div class="detail-label">Barbero</div>
+                        <div class="detail-value" id="modalBarber">—</div>
+                    </div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-icon"><i class="pi pi-info-circle"></i></div>
+                    <div>
+                        <div class="detail-label">Estado</div>
+                        <div class="detail-value" id="modalStatus">—</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary btn-sm" id="modalCloseBtn">Cerrar</button>
+                <button class="btn btn-warning btn-sm" id="modalRescheduleBtn"><i class="pi pi-replay"></i>
+                    Reprogramar</button>
+                <button class="btn btn-danger btn-sm" id="modalCancelBtn"><i class="pi pi-times"></i> Cancelar
+                    Cita</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL: Reschedule ===== -->
+    <div class="modal-overlay" id="rescheduleModal">
+        <div class="modal" style="max-width:400px;">
+            <div class="modal-header">
+                <h3><i class="pi pi-replay" style="margin-right:.5rem;color:var(--orange-500)"></i> Reprogramar Cita
+                </h3>
+                <button class="modal-close" id="rescheduleClose" aria-label="Cerrar"><i
+                        class="pi pi-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="newDate">Nueva Fecha</label>
+                    <input type="date" id="newDate" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="newTime">Nueva Hora</label>
+                    <input type="time" id="newTime" class="form-input" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary btn-sm" id="rescheduleCancel">Cancelar</button>
+                <button class="btn btn-primary btn-sm" id="rescheduleConfirm" style="width:auto;"><i
+                        class="pi pi-check"></i> Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL: Crear/Editar Servicio ===== -->
+    <div class="modal-overlay" id="servicioModal">
+        <div class="modal" style="max-width:500px;">
+            <div class="modal-header">
+                <h3 id="servicioModalTitle"><i class="pi pi-briefcase"
+                        style="margin-right:.5rem;color:var(--primary-color)"></i> Nuevo Servicio</h3>
+                <button class="modal-close" id="servicioModalClose" aria-label="Cerrar"><i
+                        class="pi pi-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="servicioForm">
+                    <input type="hidden" id="servicioId">
+                    <div class="form-group">
+                        <label for="servicioNombre">Nombre del Servicio *</label>
+                        <input type="text" id="servicioNombre" class="form-input" required
+                            placeholder="Ej. Corte Clásico">
+                    </div>
+                    <div style="display:flex; gap:1rem;">
+                        <div class="form-group" style="flex:1;">
+                            <label for="servicioDuracion">Duración (minutos) *</label>
+                            <input type="number" id="servicioDuracion" class="form-input" required min="5" step="5"
+                                placeholder="30">
+                        </div>
+                        <div class="form-group" style="flex:1;">
+                            <label for="servicioPrecio">Precio ($) *</label>
+                            <input type="number" id="servicioPrecio" class="form-input" required min="0" step="0.01"
+                                placeholder="15.00">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                            <input type="checkbox" id="servicioActivo" checked
+                                style="accent-color: var(--primary-color); width: 18px; height: 18px;">
+                            <span style="font-weight:500; color:var(--surface-900);">Servicio Activo</span>
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary btn-sm" id="servicioModalCancel">Cancelar</button>
+                <button class="btn btn-primary btn-sm" id="servicioModalSave" style="width:auto;"><i
+                        class="pi pi-save"></i> Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL: Crear/Editar Cliente ===== -->
+    <div class="modal-overlay" id="clienteModal">
+        <div class="modal" style="max-width:500px;">
+            <div class="modal-header">
+                <h3 id="clienteModalTitle"><i class="pi pi-user"
+                        style="margin-right:.5rem;color:var(--primary-color)"></i> Nuevo Cliente</h3>
+                <button class="modal-close" id="clienteModalClose" aria-label="Cerrar"><i
+                        class="pi pi-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="clienteForm">
+                    <input type="hidden" id="clienteId">
+                    <div class="form-group">
+                        <label for="clienteNombre">Nombre Completo *</label>
+                        <input type="text" id="clienteNombre" class="form-input" required placeholder="Ej. Juan Pérez">
+                    </div>
+                    <div style="display:flex; gap:1rem;">
+                        <div class="form-group" style="flex:1;">
+                            <label for="clienteTelefono">Teléfono</label>
+                            <input type="tel" id="clienteTelefono" class="form-input" placeholder="Ej. +34 600 000 000">
+                        </div>
+                        <div class="form-group" style="flex:1;">
+                            <label for="clienteEmail">Email</label>
+                            <input type="email" id="clienteEmail" class="form-input" placeholder="Ej. juan@correo.com">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="clienteNotas">Notas</label>
+                        <textarea id="clienteNotas" class="form-input" rows="3"
+                            placeholder="Preferencias, alergias, etc..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary btn-sm" id="clienteModalCancel">Cancelar</button>
+                <button class="btn btn-primary btn-sm" form="clienteForm" type="submit" id="clienteModalSave"
+                    style="width:auto;"><i class="pi pi-save"></i> Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL: Crear/Editar Barbero ===== -->
+    <div class="modal-overlay" id="barberoModal">
+        <div class="modal" style="max-width:500px;">
+            <div class="modal-header">
+                <h3 id="barberoModalTitle"><i class="pi pi-user"
+                        style="margin-right:.5rem;color:var(--primary-color)"></i> Nuevo Barbero</h3>
+                <button class="modal-close" id="barberoModalClose" aria-label="Cerrar"><i
+                        class="pi pi-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="barberoForm">
+                    <input type="hidden" id="barberoId">
+                    <div class="form-group">
+                        <label for="barberoNombre">Nombre Completo *</label>
+                        <input type="text" id="barberoNombre" class="form-input" required placeholder="Ej. Carlos Ruiz">
+                    </div>
+                    <div style="display:flex; gap:1rem;">
+                        <div class="form-group" style="flex:1;">
+                            <label for="barberoTelefono">Teléfono</label>
+                            <input type="tel" id="barberoTelefono" class="form-input" placeholder="Ej. +34 600 000 000">
+                        </div>
+                        <div class="form-group" style="flex:1;">
+                            <label for="barberoEmail">Email</label>
+                            <input type="email" id="barberoEmail" class="form-input"
+                                placeholder="Ej. carlos@correo.com">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="barberoEspecialidad">Especialidad</label>
+                        <input type="text" id="barberoEspecialidad" class="form-input"
+                            placeholder="Ej. Fades, Degradados, Barba...">
+                    </div>
+                    <div class="form-group">
+                        <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                            <input type="checkbox" id="barberoActivo" checked
+                                style="accent-color: var(--primary-color); width: 18px; height: 18px;">
+                            <span style="font-weight:500; color:var(--surface-900);">Barbero Activo</span>
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary btn-sm" id="barberoModalCancel">Cancelar</button>
+                <button class="btn btn-primary btn-sm" form="barberoForm" type="submit" id="barberoModalSave"
+                    style="width:auto;"><i class="pi pi-save"></i> Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL: Crear Cita ===== -->
+    <div class="modal-overlay" id="citaModal">
+        <div class="modal" style="max-width:500px;">
+            <div class="modal-header">
+                <h3 id="citaModalTitle"><i class="pi pi-calendar-plus"
+                        style="margin-right:.5rem;color:var(--primary-color)"></i> Nueva Cita</h3>
+                <button class="modal-close" id="citaModalClose" aria-label="Cerrar"><i class="pi pi-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="citaForm">
+                    <input type="hidden" id="citaId">
+                    <div class="form-group">
+                        <label for="cita-cliente">Cliente *</label>
+                        <select id="cita-cliente" class="form-input" required>
+                            <!-- Opciones cargadas dinámicamente -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="cita-barbero">Barbero *</label>
+                        <select id="cita-barbero" class="form-input" required>
+                            <!-- Opciones cargadas dinámicamente -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="idServicioCita">Servicio *</label>
+                        <select id="idServicioCita" class="form-input" required>
+                            <!-- Opciones cargadas dinámicamente -->
+                        </select>
+                    </div>
+                    <div style="display:flex; gap:1rem;">
+                        <div class="form-group" style="flex:1;">
+                            <label for="citaFecha">Fecha *</label>
+                            <input type="date" id="citaFecha" class="form-input" required>
+                        </div>
+                        <div class="form-group" style="flex:1;">
+                            <label for="citaHora">Hora *</label>
+                            <input type="time" id="citaHora" class="form-input" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="citaNotas">Notas</label>
+                        <textarea id="citaNotas" class="form-input" rows="3"
+                            placeholder="Comentarios adicionales..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary btn-sm" id="citaModalCancel">Cancelar</button>
+                <button class="btn btn-primary btn-sm" form="citaForm" type="submit" id="citaModalSave"
+                    style="width:auto;"><i class="pi pi-save"></i> Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL: Confirmar Eliminación ===== -->
+    <div class="modal-overlay" id="deleteConfirmModal">
+        <div class="modal" style="max-width: 400px; text-align: center;">
+            <div class="modal-header" style="border-bottom: none; justify-content: center; padding-bottom: 0;">
+                <i class="pi pi-exclamation-triangle"
+                    style="font-size: 3rem; color: var(--red-500); margin-bottom: 1rem; display: block;"></i>
+                <h3 style="margin: 0;">¿Eliminar Servicio?</h3>
+            </div>
+            <div class="modal-body" style="padding: 1rem 1.5rem;">
+                <p style="color: var(--surface-600); margin: 0;">Esta acción no se puede deshacer. ¿Estás seguro de que
+                    deseas continuar?</p>
+            </div>
+            <div class="modal-footer" style="border-top: none; justify-content: center; gap: 1rem;">
+                <button class="btn btn-secondary" id="btnCancelDelete">Cancelar</button>
+                <button class="btn btn-danger" id="btnConfirmDelete">Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- FullCalendar JS -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- CDNs para exportar a PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <!-- App JS -->
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/calendario.js"></script>
+    <script src="js/servicios.js"></script>
+    <script src="js/clientes.js"></script>
+    <script src="js/barberos.js"></script>
+    <script src="js/ajustes.js"></script>
+    <script src="js/citas.js"></script>
+    <script src="js/estadisticas.js"></script>
+</body>
+
+</html>
