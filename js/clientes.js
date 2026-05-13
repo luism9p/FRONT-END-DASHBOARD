@@ -67,6 +67,136 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ==========================================
+    // CRM — Modal de Perfil Avanzado del Cliente
+    // ==========================================
+    const crmPerfilModal = document.getElementById('crmPerfilModal');
+    const crmModalClose = document.getElementById('crmModalClose');
+    const crmModalCloseBtn = document.getElementById('crmModalCloseBtn');
+
+    function cerrarCrmModal() {
+        crmPerfilModal.classList.remove('show');
+    }
+
+    if (crmModalClose) crmModalClose.addEventListener('click', cerrarCrmModal);
+    if (crmModalCloseBtn) crmModalCloseBtn.addEventListener('click', cerrarCrmModal);
+
+    // Close on overlay click
+    if (crmPerfilModal) {
+        crmPerfilModal.addEventListener('click', (e) => {
+            if (e.target === crmPerfilModal) cerrarCrmModal();
+        });
+    }
+
+    /**
+     * Abre el modal CRM y consume GET /api/clientes/:id/historial
+     */
+    async function abrirPerfilCRM(idCliente) {
+        // Show modal with loading state
+        const historialBody = document.getElementById('crmHistorialBody');
+        const kpiGrid = document.getElementById('crmKpiGrid');
+        const historialSection = document.querySelector('.crm-historial-section');
+
+        // Reset to loading state
+        document.getElementById('crmAvatar').textContent = '…';
+        document.getElementById('crmNombre').textContent = 'Cargando…';
+        document.getElementById('crmTelefono').textContent = '—';
+        document.getElementById('crmEmail').textContent = '—';
+        document.getElementById('crmTotalCitas').textContent = '—';
+        document.getElementById('crmTotalGastado').textContent = '—';
+        document.getElementById('crmServicioFav').textContent = '—';
+        document.getElementById('crmBarberoFav').textContent = '—';
+        historialBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:1.5rem; color:var(--text-color-secondary)"><i class="pi pi-spin pi-spinner" style="font-size:1.25rem"></i> Cargando historial…</td></tr>';
+
+        crmPerfilModal.classList.add('show');
+
+        try {
+            const response = await fetch(`${API_URL}/${idCliente}/historial`, {
+                method: 'GET',
+                headers: getHeaders()
+            });
+
+            if (!response.ok) throw new Error('Error al obtener el perfil del cliente');
+
+            const data = await response.json();
+
+            if (!data.success) throw new Error('La API respondió con un error');
+
+            // --- Populate Header ---
+            const cliente = data.cliente;
+            const nombre = cliente.nombre || 'Sin nombre';
+            const initials = nombre.split(' ').map(p => p.charAt(0).toUpperCase()).slice(0, 2).join('');
+
+            document.getElementById('crmAvatar').textContent = initials;
+            document.getElementById('crmNombre').textContent = nombre;
+            document.getElementById('crmTelefono').textContent = cliente.telefono || 'No registrado';
+            document.getElementById('crmEmail').textContent = cliente.email || 'No registrado';
+
+            // --- Populate KPIs ---
+            const stats = data.estadisticas || {};
+            document.getElementById('crmTotalCitas').textContent = stats.total_citas ?? 0;
+
+            const totalGastado = parseFloat(stats.total_gastado || 0);
+            document.getElementById('crmTotalGastado').textContent = '$' + totalGastado.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+            document.getElementById('crmServicioFav').textContent = stats.servicio_favorito || 'N/A';
+            document.getElementById('crmBarberoFav').textContent = stats.barbero_favorito || 'N/A';
+
+            // --- Populate Historial Table ---
+            const historial = data.historial || [];
+            historialBody.innerHTML = '';
+
+            if (historial.length === 0) {
+                historialBody.innerHTML = `
+                    <tr>
+                        <td colspan="6">
+                            <div class="crm-empty">
+                                <i class="pi pi-calendar-times"></i>
+                                <p>Este cliente aún no tiene citas registradas.</p>
+                            </div>
+                        </td>
+                    </tr>`;
+                return;
+            }
+
+            historial.forEach(cita => {
+                // Map estado to badge class
+                let badgeClass = 'badge-pending';
+                let estadoLabel = cita.estado || 'pendiente';
+                if (estadoLabel.toLowerCase() === 'confirmada') badgeClass = 'badge-confirmed';
+                else if (estadoLabel.toLowerCase() === 'cancelada') badgeClass = 'badge-cancelled';
+
+                // Format date
+                let fechaFormatted = cita.fecha;
+                try {
+                    const d = new Date(cita.fecha);
+                    if (!isNaN(d)) fechaFormatted = d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+                } catch (_) { /* keep original */ }
+
+                // Format hora
+                const hora = cita.hora_inicio ? cita.hora_inicio.substring(0, 5) : '—';
+
+                // Format precio
+                const precio = cita.precio != null ? '$' + parseFloat(cita.precio).toFixed(2) : '—';
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${fechaFormatted}</td>
+                    <td>${hora}</td>
+                    <td style="font-weight:500">${cita.nombre_servicio || '—'}</td>
+                    <td>${cita.nombre_barbero || '—'}</td>
+                    <td style="font-weight:600">${precio}</td>
+                    <td><span class="badge ${badgeClass}">${estadoLabel.charAt(0).toUpperCase() + estadoLabel.slice(1)}</span></td>
+                `;
+                historialBody.appendChild(tr);
+            });
+
+        } catch (error) {
+            console.error('Error CRM:', error);
+            historialBody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:1.5rem; color:var(--red-500)"><i class="pi pi-exclamation-triangle" style="margin-right:.5rem"></i>${error.message}</td></tr>`;
+        }
+    }
+
+    // ==========================================
     // Cargar Clientes (GET)
     // ==========================================
     async function cargarClientes() {
@@ -108,6 +238,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td style="padding:1rem;">${cliente.email || '-'}</td>
                 <td style="padding:1rem;">${cliente.notas || '-'}</td>
                 <td style="padding:1rem; text-align:right;">
+                    <button class="btn btn-sm btn-ver-perfil" style="padding:0.4rem; margin-right:0.5rem; background: var(--primary-50); border: 1px solid var(--primary-200); color: var(--primary-color);" title="Ver Perfil">
+                        <i class="pi pi-eye"></i>
+                    </button>
                     <button class="btn btn-sm btn-secondary btn-editar" style="padding:0.4rem; margin-right:0.5rem; background: var(--surface-200); border: none; color: var(--surface-700);" title="Editar">
                         <i class="pi pi-pencil"></i>
                     </button>
@@ -116,6 +249,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     </button>
                 </td>
             `;
+
+            // Asignar evento de Ver Perfil CRM
+            tr.querySelector('.btn-ver-perfil').addEventListener('click', () => {
+                abrirPerfilCRM(cliente.id_cliente);
+            });
 
             // Asignar evento de edición
             tr.querySelector('.btn-editar').addEventListener('click', () => {

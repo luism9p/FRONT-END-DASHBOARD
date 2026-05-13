@@ -36,6 +36,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (response.ok && data.success) {
                     // ¡Login exitoso!
                     localStorage.setItem('barberia_token', data.token);
+                    localStorage.setItem('barberia_user_nombre', data.usuario.nombre);
+                    localStorage.setItem('barberia_user_rol', data.usuario.rol);
+                    localStorage.setItem('barberia_id_barbero', data.usuario.id_barbero);
                     window.location.href = 'dashboard.html';
                 } else {
                     // Credenciales incorrectas: Mostramos el div de error rojo

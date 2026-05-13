@@ -1,22 +1,24 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="BarberPro - Inicia sesión en tu panel de administración de barbería">
-    <title>BarberPro | Iniciar Sesión</title>
+    <meta name="description" content="FlowHive - Inicia sesión en tu panel de administración de barbería">
+    <title>FlowHive | Iniciar Sesión</title>
     <!-- PrimeIcons -->
     <link rel="stylesheet" href="https://unpkg.com/primeicons@7.0.0/primeicons.css">
     <!-- Styles -->
     <link rel="stylesheet" href="css/styles.css">
 </head>
+
 <body>
     <div class="login-container" id="loginPage">
         <div class="login-wrapper">
             <!-- Logo -->
             <div class="login-logo">
-                <i src="img/logo-dark.svg"></i>
-                <span>BarberPro</span>
+                <img src="img/logo-dark.svg" alt="FlowHive Logo" style="width: 35px; height: auto;">
+                <span>FlowHive</span>
             </div>
 
             <!-- Card border gradient -->
@@ -41,30 +43,17 @@
                     <form id="loginForm" autocomplete="on">
                         <div class="form-group">
                             <label for="email">Correo electrónico</label>
-                            <input
-                                type="email"
-                                id="email"
-                                name="email"
-                                class="form-input"
-                                placeholder="tu@correo.com"
-                                required
-                                autocomplete="email"
-                            >
+                            <input type="email" id="email" name="email" class="form-input" placeholder="tu@correo.com"
+                                required autocomplete="email">
                         </div>
 
                         <div class="form-group">
                             <label for="password">Contraseña</label>
                             <div class="password-wrapper">
-                                <input
-                                    type="password"
-                                    id="password"
-                                    name="password"
-                                    class="form-input"
-                                    placeholder="Tu contraseña"
-                                    required
-                                    autocomplete="current-password"
-                                >
-                                <button type="button" class="password-toggle" id="togglePassword" aria-label="Mostrar contraseña">
+                                <input type="password" id="password" name="password" class="form-input"
+                                    placeholder="Tu contraseña" required autocomplete="current-password">
+                                <button type="button" class="password-toggle" id="togglePassword"
+                                    aria-label="Mostrar contraseña">
                                     <i class="pi pi-eye"></i>
                                 </button>
                             </div>
@@ -90,4 +79,5 @@
 
     <script src="js/auth.js"></script>
 </body>
+
 </html>

@@ -13,6 +13,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnConfirmDelete = document.getElementById('btnConfirmDelete');
     let barberoIdAEliminar = null;
 
+    // Referencias para el Modal de Comisiones
+    const comisionesModal = document.getElementById('comisionesModal');
+    const comisionesForm = document.getElementById('comisionesForm');
+    const comisionesModalClose = document.getElementById('comisionesModalClose');
+    const comisionesModalCloseBtn = document.getElementById('comisionesModalCloseBtn');
+    let comisionBarberoId = null;
+
     // API config
     const API_URL = 'http://localhost:3000/api/barberos';
 
@@ -103,6 +110,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td style="padding:1rem;">${barbero.especialidad || '-'}</td>
                 <td style="padding:1rem;">${estadoBadge}</td>
                 <td style="padding:1rem; text-align:right;">
+                    <button class="btn btn-sm btn-comision" title="Calcular Pago">
+                        <i class="pi pi-dollar"></i>
+                    </button>
                     <button class="btn btn-sm btn-secondary btn-editar" style="padding:0.4rem; margin-right:0.5rem; background: var(--surface-200); border: none; color: var(--surface-700);" title="Editar">
                         <i class="pi pi-pencil"></i>
                     </button>
@@ -120,12 +130,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     barbero.telefono_barbero,
                     barbero.email_barbero,
                     barbero.especialidad,
-                    barbero.activo
+                    barbero.activo,
+                    barbero.porcentaje_comision
                 );
             });
 
             tr.querySelector('.btn-eliminar').addEventListener('click', () => {
                 eliminarBarbero(barbero.id_barbero);
+            });
+
+            tr.querySelector('.btn-comision').addEventListener('click', () => {
+                abrirComisionesModal(barbero.id_barbero, barbero.nombre_barbero);
             });
 
             barberosTableBody.appendChild(tr);
@@ -139,6 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
         barberoForm.reset();
         document.getElementById('barberoId').value = '';
         document.getElementById('barberoActivo').checked = true;
+        document.getElementById('barberoPorcentaje').value = 50;
         barberoModalTitle.innerHTML = '<i class="pi pi-user" style="margin-right:.5rem;color:var(--primary-color)"></i> Nuevo Barbero';
         barberoModal.classList.add('show');
     });
@@ -147,13 +163,14 @@ document.addEventListener('DOMContentLoaded', () => {
     barberoModalClose.addEventListener('click', cerrarModal);
     barberoModalCancel.addEventListener('click', cerrarModal);
 
-    function editarBarbero(id, nombre, telefono, email, especialidad, activo) {
+    function editarBarbero(id, nombre, telefono, email, especialidad, activo, porcentaje) {
         document.getElementById('barberoId').value = id;
         document.getElementById('barberoNombre').value = nombre;
         document.getElementById('barberoTelefono').value = telefono || '';
         document.getElementById('barberoEmail').value = email || '';
         document.getElementById('barberoEspecialidad').value = especialidad || '';
         document.getElementById('barberoActivo').checked = activo !== false;
+        document.getElementById('barberoPorcentaje').value = porcentaje != null ? porcentaje : 50;
         
         barberoModalTitle.innerHTML = '<i class="pi pi-pencil" style="margin-right:.5rem;color:var(--primary-color)"></i> Editar Barbero';
         barberoModal.classList.add('show');
@@ -173,6 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
             telefono_barbero: document.getElementById('barberoTelefono').value,
             email_barbero: document.getElementById('barberoEmail').value,
             especialidad: document.getElementById('barberoEspecialidad').value,
+            porcentaje_comision: Number(document.getElementById('barberoPorcentaje').value) || 50,
             activo: document.getElementById('barberoActivo').checked
         };
 
@@ -231,6 +249,117 @@ document.addEventListener('DOMContentLoaded', () => {
             deleteConfirmModal.classList.remove('show');
         }
     });
+
+    // ==========================================
+    // Comisiones Modal
+    // ==========================================
+    function abrirComisionesModal(id, nombre) {
+        comisionBarberoId = id;
+        document.getElementById('comisionesNombreBarbero').textContent = nombre;
+        document.getElementById('comisionesResultados').style.display = 'none';
+        document.getElementById('comisionesLoading').style.display = 'none';
+        comisionesForm.reset();
+        // Default: primera semana del mes actual
+        const hoy = new Date();
+        const inicio = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+        document.getElementById('comisionInicio').value = formatDateInput(inicio);
+        document.getElementById('comisionFin').value = formatDateInput(hoy);
+        comisionesModal.classList.add('show');
+    }
+
+    function formatDateInput(d) {
+        return d.toISOString().split('T')[0];
+    }
+
+    function cerrarComisionesModal() {
+        comisionesModal.classList.remove('show');
+    }
+
+    comisionesModalClose.addEventListener('click', cerrarComisionesModal);
+    comisionesModalCloseBtn.addEventListener('click', cerrarComisionesModal);
+
+    comisionesForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const inicio = document.getElementById('comisionInicio').value;
+        const fin = document.getElementById('comisionFin').value;
+        if (!inicio || !fin) return;
+
+        const resultados = document.getElementById('comisionesResultados');
+        const loading = document.getElementById('comisionesLoading');
+        resultados.style.display = 'none';
+        loading.style.display = 'flex';
+
+        try {
+            const response = await fetch(
+                `${API_URL}/${comisionBarberoId}/comisiones?inicio=${inicio}&fin=${fin}`,
+                { method: 'GET', headers: getHeaders() }
+            );
+            if (!response.ok) throw new Error('Error al calcular comisiones');
+            const data = await response.json();
+            renderComisiones(data);
+        } catch (error) {
+            console.error(error);
+            mostrarToast(error.message, 'error');
+        } finally {
+            loading.style.display = 'none';
+        }
+    });
+
+    function renderComisiones(data) {
+        const { resumen, detalle_citas } = data;
+        const resultados = document.getElementById('comisionesResultados');
+
+        // KPI values
+        document.getElementById('comKpiPago').textContent = `$${Number(resumen.total_a_pagar_barbero).toFixed(2)}`;
+        document.getElementById('comKpiIngreso').textContent = `$${Number(resumen.total_generado_local).toFixed(2)}`;
+        document.getElementById('comKpiPorcentaje').textContent = `${resumen.porcentaje}%`;
+        document.getElementById('comKpiCitas').textContent = `${resumen.total_citas} citas`;
+
+        // Periodo
+        document.getElementById('comPeriodoLabel').innerHTML =
+            `<i class="pi pi-clock"></i><span>Periodo: <strong>${resumen.periodo}</strong></span>`;
+
+        // Tabla detalle
+        const tbody = document.getElementById('comisionesDetalleBody');
+        tbody.innerHTML = '';
+
+        if (!detalle_citas || detalle_citas.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5"><div class="comisiones-empty"><i class="pi pi-inbox"></i><p>No hay citas en este periodo</p></div></td></tr>`;
+        } else {
+            detalle_citas.forEach(cita => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${formatFecha(cita.fecha)}</td>
+                    <td>${cita.hora_inicio ? cita.hora_inicio.slice(0, 5) : '-'}</td>
+                    <td>${cita.nombre_servicio || '-'}</td>
+                    <td class="precio-cell">$${Number(cita.precio).toFixed(2)}</td>
+                    <td class="ganancia-cell">$${Number(cita.ganancia_barbero).toFixed(2)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Fila de totales
+            const trTotal = document.createElement('tr');
+            trTotal.className = 'fila-total';
+            trTotal.innerHTML = `
+                <td colspan="3" style="text-align:right;">TOTAL</td>
+                <td class="precio-cell">$${Number(resumen.total_generado_local).toFixed(2)}</td>
+                <td class="ganancia-cell">$${Number(resumen.total_a_pagar_barbero).toFixed(2)}</td>
+            `;
+            tbody.appendChild(trTotal);
+        }
+
+        resultados.style.display = 'block';
+    }
+
+    function formatFecha(fechaStr) {
+        if (!fechaStr) return '-';
+        // Handle ISO datetime strings like "2026-05-05T05:00:00.000Z"
+        const soloFecha = fechaStr.includes('T') ? fechaStr.split('T')[0] : fechaStr;
+        const partes = soloFecha.split('-');
+        if (partes.length === 3) return `${partes[2]}/${partes[1]}/${partes[0]}`;
+        return fechaStr;
+    }
 
     // ==========================================
     // Lazy Loading

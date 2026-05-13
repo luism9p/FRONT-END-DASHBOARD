@@ -52,6 +52,11 @@ document.addEventListener('DOMContentLoaded', function () {
         allDaySlot: false,
         height: 'auto',
 
+        headerToolbar: {
+            left: 'title',
+            center: '',
+            right: 'prev,next' // Al no poner "today", el botón azul desaparece
+        },
 
         eventClick: function (info) {
             info.jsEvent.preventDefault();
@@ -137,7 +142,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
     calendar.render();
 
-    window.cargarCitasBackend = async function() {
+    window.cargarCitasBackend = async function () {
         try {
             const response = await fetch('http://localhost:3000/api/citas', {
                 headers: { 'Authorization': 'Bearer ' + localStorage.getItem('barberia_token') }
@@ -153,7 +158,7 @@ document.addEventListener('DOMContentLoaded', function () {
             console.error('Error al cargar backend:', error);
         }
     };
-    
+
     window.cargarCitasBackend();
 
     window.filtroEstadoActual = 'all';
@@ -310,8 +315,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 // Refresco total de la tabla y UI
                 if (typeof window.cargarTablaCitas === 'function') {
                     window.cargarTablaCitas();
-                } else if (window.cargarCitasBackend) {
-                    window.cargarCitasBackend();
                 }
 
                 Swal.fire({
@@ -321,6 +324,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     timer: 2000,
                     showConfirmButton: false
                 });
+
+                if (typeof window.cargarCitasBackend === 'function') {
+                    await window.cargarCitasBackend();
+                }
             } else {
                 Swal.fire({ title: 'Error', text: 'No se pudo cancelar la cita', icon: 'error', timer: 2000, showConfirmButton: false });
             }
@@ -350,7 +357,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (response.ok) {
                 document.getElementById('appointmentModal').style.display = 'none';
-                if (window.cargarCitasBackend) window.cargarCitasBackend();
+                
                 if (typeof window.actualizarEstadisticas === 'function') {
                     window.actualizarEstadisticas();
                 }
@@ -358,6 +365,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     window.cargarTablaCitas();
                 }
                 mostrarToast("Cita reactivada exitosamente", "success");
+
+                if (typeof window.cargarCitasBackend === 'function') {
+                    await window.cargarCitasBackend();
+                }
             } else {
                 mostrarToast("No se pudo reactivar la cita", "error");
             }

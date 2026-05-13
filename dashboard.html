@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="BarberPro - Panel de administración para tu barbería">
-    <title>BarberPro | Dashboard</title>
+    <meta name="description" content="FlowHive - Panel de administración para tu barbería">
+    <title>FlowHive | Dashboard</title>
     <!-- PrimeIcons -->
     <link rel="stylesheet" href="https://unpkg.com/primeicons@7.0.0/primeicons.css">
     <!-- FullCalendar CSS -->
@@ -29,8 +29,8 @@
         <!-- ===== TOPBAR ===== -->
         <div class="layout-topbar">
             <a href="dashboard.html" class="layout-topbar-logo">
-                <i class="pi pi-bolt"></i>
-                <span>BarberPro</span>
+                <img src="img/logo-dark.svg" alt="FlowHive Logo" style="width: 35px; height: auto;">
+                <span>FlowHive</span>
             </a>
 
             <button type="button" class="layout-topbar-button layout-menu-button" id="menuToggle"
@@ -122,7 +122,7 @@
                     <div class="kpi-grid"
                         style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
                         <!-- Tarjeta: Ingresos Totales -->
-                        <div class="kpi-card">
+                        <div class="kpi-card card-ingresos">
                             <div class="kpi-info">
                                 <h3>Ingresos Totales</h3>
                                 <div class="kpi-value" id="stat-ingresos">$0.00</div>
@@ -474,7 +474,7 @@
 
             <!-- Footer -->
             <footer class="layout-footer">
-                BarberPro &copy; 2026 — Powered with by Exoticos
+                FlowHive &copy; 2026 — Powered with by Exoticos
             </footer>
         </div>
 
@@ -684,6 +684,11 @@
                             placeholder="Ej. Fades, Degradados, Barba...">
                     </div>
                     <div class="form-group">
+                        <label for="barberoPorcentaje">Porcentaje de Comisión (%)</label>
+                        <input type="number" id="barberoPorcentaje" class="form-input" min="0" max="100" step="1"
+                            value="50" placeholder="Ej. 50">
+                    </div>
+                    <div class="form-group">
                         <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
                             <input type="checkbox" id="barberoActivo" checked
                                 style="accent-color: var(--primary-color); width: 18px; height: 18px;">
@@ -769,6 +774,186 @@
             <div class="modal-footer" style="border-top: none; justify-content: center; gap: 1rem;">
                 <button class="btn btn-secondary" id="btnCancelDelete">Cancelar</button>
                 <button class="btn btn-danger" id="btnConfirmDelete">Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL: CRM Perfil de Cliente ===== -->
+    <div class="modal-overlay" id="crmPerfilModal">
+        <div class="modal modal-crm">
+            <!-- Profile Header (populated via JS) -->
+            <div class="crm-profile-header" id="crmProfileHeader">
+                <div class="crm-avatar" id="crmAvatar">—</div>
+                <div class="crm-profile-info">
+                    <h3 class="crm-profile-name" id="crmNombre">—</h3>
+                    <div class="crm-profile-meta">
+                        <span><i class="pi pi-phone"></i> <span id="crmTelefono">—</span></span>
+                        <span><i class="pi pi-envelope"></i> <span id="crmEmail">—</span></span>
+                    </div>
+                </div>
+                <button class="modal-close" id="crmModalClose" aria-label="Cerrar"
+                    style="color: rgba(255,255,255,0.8); position: absolute; top: 1rem; right: 1rem;">
+                    <i class="pi pi-times"></i>
+                </button>
+            </div>
+
+            <!-- KPI Mini Cards -->
+            <div class="crm-kpi-grid" id="crmKpiGrid">
+                <div class="crm-kpi-card">
+                    <div class="crm-kpi-icon blue"><i class="pi pi-calendar"></i></div>
+                    <div class="crm-kpi-value" id="crmTotalCitas">0</div>
+                    <div class="crm-kpi-label">Total Citas</div>
+                </div>
+                <div class="crm-kpi-card">
+                    <div class="crm-kpi-icon green"><i class="pi pi-dollar"></i></div>
+                    <div class="crm-kpi-value" id="crmTotalGastado">$0.00</div>
+                    <div class="crm-kpi-label">Ingresos Generados</div>
+                </div>
+                <div class="crm-kpi-card">
+                    <div class="crm-kpi-icon purple"><i class="pi pi-star"></i></div>
+                    <div class="crm-kpi-value" id="crmServicioFav" style="font-size: 1rem;">—</div>
+                    <div class="crm-kpi-label">Servicio Favorito</div>
+                </div>
+                <div class="crm-kpi-card">
+                    <div class="crm-kpi-icon orange"><i class="pi pi-user"></i></div>
+                    <div class="crm-kpi-value" id="crmBarberoFav" style="font-size: 1rem;">—</div>
+                    <div class="crm-kpi-label">Barbero Favorito</div>
+                </div>
+            </div>
+
+            <!-- Historial de Citas -->
+            <div class="crm-historial-section">
+                <h4 class="crm-historial-title"><i class="pi pi-list"></i> Historial de Citas</h4>
+                <div style="overflow-x: auto;">
+                    <table class="crm-table">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Hora</th>
+                                <th>Servicio</th>
+                                <th>Barbero</th>
+                                <th>Precio</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="crmHistorialBody">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer">
+                <button class="btn btn-secondary btn-sm" id="crmModalCloseBtn">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL: Comisiones de Barbero ===== -->
+    <div class="modal-overlay" id="comisionesModal">
+        <div class="modal modal-comisiones">
+            <!-- Header con gradiente -->
+            <div class="comisiones-header">
+                <div class="comisiones-header-info">
+                    <div class="comisiones-header-icon">
+                        <i class="pi pi-dollar"></i>
+                    </div>
+                    <div>
+                        <h3 class="comisiones-header-title">Reporte de Comisiones</h3>
+                        <p class="comisiones-header-sub" id="comisionesNombreBarbero">Selecciona un periodo</p>
+                    </div>
+                </div>
+                <button class="modal-close" id="comisionesModalClose" aria-label="Cerrar"
+                    style="color: rgba(255,255,255,0.8); position: absolute; top: 1rem; right: 1rem;">
+                    <i class="pi pi-times"></i>
+                </button>
+            </div>
+
+            <!-- Formulario de fechas -->
+            <div class="comisiones-form-section">
+                <form id="comisionesForm" class="comisiones-form">
+                    <div class="comisiones-date-group">
+                        <div class="form-group" style="margin:0; flex:1;">
+                            <label for="comisionInicio"><i class="pi pi-calendar"
+                                    style="margin-right:.35rem; color: var(--primary-color);"></i>Fecha Inicio</label>
+                            <input type="date" id="comisionInicio" class="form-input" required>
+                        </div>
+                        <div class="form-group" style="margin:0; flex:1;">
+                            <label for="comisionFin"><i class="pi pi-calendar"
+                                    style="margin-right:.35rem; color: var(--primary-color);"></i>Fecha Fin</label>
+                            <input type="date" id="comisionFin" class="form-input" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary comisiones-btn-generar" id="btnGenerarComisiones">
+                        <i class="pi pi-chart-bar"></i> Generar Reporte
+                    </button>
+                </form>
+            </div>
+
+            <!-- Resultados (hidden por default) -->
+            <div id="comisionesResultados" class="comisiones-resultados" style="display:none;">
+                <!-- KPI Cards -->
+                <div class="comisiones-kpi-row">
+                    <div class="comisiones-kpi-card comisiones-kpi-pago">
+                        <div class="comisiones-kpi-icon-wrap green">
+                            <i class="pi pi-wallet"></i>
+                        </div>
+                        <div class="comisiones-kpi-data">
+                            <span class="comisiones-kpi-label">Total a Pagar al Barbero</span>
+                            <span class="comisiones-kpi-value" id="comKpiPago">$0.00</span>
+                        </div>
+                        <div class="comisiones-kpi-badge" id="comKpiPorcentaje">50%</div>
+                    </div>
+                    <div class="comisiones-kpi-card comisiones-kpi-ingreso">
+                        <div class="comisiones-kpi-icon-wrap blue">
+                            <i class="pi pi-building"></i>
+                        </div>
+                        <div class="comisiones-kpi-data">
+                            <span class="comisiones-kpi-label">Ingreso Bruto del Local</span>
+                            <span class="comisiones-kpi-value" id="comKpiIngreso">$0.00</span>
+                        </div>
+                        <div class="comisiones-kpi-badge-secondary" id="comKpiCitas">0 citas</div>
+                    </div>
+                </div>
+
+                <!-- Periodo label -->
+                <div class="comisiones-periodo" id="comPeriodoLabel">
+                    <i class="pi pi-clock"></i>
+                    <span>Periodo: —</span>
+                </div>
+
+                <!-- Tabla detalle -->
+                <div class="comisiones-detalle-section">
+                    <h4 class="comisiones-detalle-title"><i class="pi pi-list"></i> Detalle de Citas Procesadas</h4>
+                    <div style="overflow-x: auto;">
+                        <table class="crm-table comisiones-table">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Hora</th>
+                                    <th>Servicio</th>
+                                    <th>Precio</th>
+                                    <th>Ganancia Barbero</th>
+                                </tr>
+                            </thead>
+                            <tbody id="comisionesDetalleBody">
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading state -->
+            <div id="comisionesLoading" class="crm-loading" style="display:none;">
+                <div class="spinner spinner-dark" style="width:2rem; height:2rem;"></div>
+                <span>Calculando comisiones...</span>
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer">
+                <button class="btn btn-secondary btn-sm" id="comisionesModalCloseBtn">Cerrar</button>
             </div>
         </div>
     </div>

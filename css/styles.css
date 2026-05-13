@@ -1227,7 +1227,606 @@ p {
     }
 }
 
+/* ============================================
+   CRM Profile Modal
+   ============================================ */
+
+/* Wider modal for CRM view */
+.modal-crm {
+    max-width: 720px !important;
+}
+
+/* Profile Header */
+.crm-profile-header {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-400) 100%);
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+
+.crm-avatar {
+    width: 64px;
+    height: 64px;
+    min-width: 64px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+}
+
+.crm-profile-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.crm-profile-name {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+    line-height: 1.3;
+}
+
+.crm-profile-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: .375rem;
+}
+
+.crm-profile-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    font-size: .85rem;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.crm-profile-meta span i {
+    font-size: .8rem;
+}
+
+/* KPI Mini Cards */
+.crm-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: .75rem;
+    padding: 1.25rem 1.5rem;
+    background: var(--surface-50);
+    border-bottom: 1px solid var(--surface-border);
+}
+
+.crm-kpi-card {
+    background: var(--surface-card);
+    border-radius: 10px;
+    padding: 1rem;
+    text-align: center;
+    border: 1px solid var(--surface-border);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.crm-kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.crm-kpi-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    margin: 0 auto .5rem;
+}
+
+.crm-kpi-icon.blue {
+    background: #eff6ff;
+    color: var(--blue-500);
+}
+
+.crm-kpi-icon.green {
+    background: #f0fdf4;
+    color: var(--green-500);
+}
+
+.crm-kpi-icon.purple {
+    background: var(--primary-50);
+    color: var(--primary-color);
+}
+
+.crm-kpi-icon.orange {
+    background: #fff7ed;
+    color: var(--orange-500);
+}
+
+.crm-kpi-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--surface-900);
+    line-height: 1.2;
+}
+
+.crm-kpi-label {
+    font-size: .7rem;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--text-color-secondary);
+    margin-top: .25rem;
+    font-weight: 600;
+}
+
+/* Historial Table inside CRM modal */
+.crm-historial-section {
+    padding: 1.25rem 1.5rem;
+}
+
+.crm-historial-title {
+    font-size: .95rem;
+    font-weight: 700;
+    color: var(--surface-900);
+    margin: 0 0 .75rem;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+.crm-historial-title i {
+    color: var(--primary-color);
+}
+
+.crm-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .85rem;
+}
+
+.crm-table thead th {
+    padding: .625rem .75rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-color-secondary);
+    background: var(--surface-50);
+    border-bottom: 2px solid var(--surface-border);
+    text-transform: uppercase;
+    font-size: .7rem;
+    letter-spacing: .5px;
+}
+
+.crm-table tbody tr {
+    border-bottom: 1px solid var(--surface-100);
+    transition: background 0.15s ease;
+}
+
+.crm-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.crm-table tbody tr:hover {
+    background: var(--surface-hover);
+}
+
+.crm-table tbody td {
+    padding: .625rem .75rem;
+    color: var(--surface-800);
+}
+
+.crm-table .badge {
+    font-size: .7rem;
+    padding: .2rem .6rem;
+}
+
+/* Empty state */
+.crm-empty {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--text-color-secondary);
+}
+
+.crm-empty i {
+    font-size: 2rem;
+    color: var(--surface-300);
+    margin-bottom: .5rem;
+    display: block;
+}
+
+/* Loading state for modal body */
+.crm-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1rem;
+    gap: 1rem;
+    color: var(--text-color-secondary);
+}
+
+/* CRM Modal responsive */
+@media (max-width: 640px) {
+    .crm-kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .crm-profile-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .crm-profile-meta {
+        justify-content: center;
+    }
+
+    .crm-table {
+        font-size: .78rem;
+    }
+
+    .crm-table thead th,
+    .crm-table tbody td {
+        padding: .5rem;
+    }
+}
+
 /* Obligar a SweetAlert a estar por encima de todos los modales */
 .swal2-container {
     z-index: 99999 !important;
+}
+
+/* ============================================
+   Comisiones Modal
+   ============================================ */
+
+.modal-comisiones {
+    max-width: 680px !important;
+}
+
+/* Header */
+.comisiones-header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%);
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+
+.comisiones-header-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.comisiones-header-icon {
+    width: 52px;
+    height: 52px;
+    min-width: 52px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.comisiones-header-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+    line-height: 1.3;
+}
+
+.comisiones-header-sub {
+    font-size: .85rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin: .2rem 0 0;
+}
+
+/* Form Section */
+.comisiones-form-section {
+    padding: 1.25rem 1.5rem;
+    background: var(--surface-50);
+    border-bottom: 1px solid var(--surface-border);
+}
+
+.comisiones-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.comisiones-date-group {
+    display: flex;
+    gap: 1rem;
+}
+
+.comisiones-btn-generar {
+    width: 100%;
+    padding: .85rem !important;
+    font-size: .95rem !important;
+    border-radius: 10px !important;
+    background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-400) 100%) !important;
+    border: none !important;
+    transition: all 0.25s ease !important;
+    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+}
+
+.comisiones-btn-generar:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4) !important;
+}
+
+.comisiones-btn-generar:active {
+    transform: translateY(0);
+}
+
+/* Resultados */
+.comisiones-resultados {
+    padding: 1.25rem 1.5rem;
+    animation: fadeIn 0.4s ease;
+}
+
+/* KPI Row */
+.comisiones-kpi-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .75rem;
+    margin-bottom: 1rem;
+}
+
+.comisiones-kpi-card {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: 1rem 1.15rem;
+    border-radius: 12px;
+    border: 1px solid var(--surface-border);
+    background: var(--surface-card);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    overflow: hidden;
+}
+
+.comisiones-kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+/* Green accent for "Total a Pagar" card */
+.comisiones-kpi-pago {
+    border-left: 4px solid #10b981;
+    background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+}
+
+/* Blue accent for "Ingreso Bruto" card */
+.comisiones-kpi-ingreso {
+    border-left: 4px solid var(--blue-500);
+    background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
+}
+
+.comisiones-kpi-icon-wrap {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+}
+
+.comisiones-kpi-icon-wrap.green {
+    background: #dcfce7;
+    color: #059669;
+}
+
+.comisiones-kpi-icon-wrap.blue {
+    background: #dbeafe;
+    color: var(--blue-500);
+}
+
+.comisiones-kpi-data {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+}
+
+.comisiones-kpi-label {
+    font-size: .7rem;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--text-color-secondary);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.comisiones-kpi-value {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--surface-900);
+    line-height: 1.3;
+}
+
+.comisiones-kpi-pago .comisiones-kpi-value {
+    color: #059669;
+}
+
+.comisiones-kpi-ingreso .comisiones-kpi-value {
+    color: var(--blue-500);
+}
+
+.comisiones-kpi-badge {
+    position: absolute;
+    top: .6rem;
+    right: .75rem;
+    background: #dcfce7;
+    color: #059669;
+    font-size: .7rem;
+    font-weight: 700;
+    padding: .2rem .55rem;
+    border-radius: 6px;
+    letter-spacing: .3px;
+}
+
+.comisiones-kpi-badge-secondary {
+    position: absolute;
+    top: .6rem;
+    right: .75rem;
+    background: #dbeafe;
+    color: var(--blue-500);
+    font-size: .7rem;
+    font-weight: 700;
+    padding: .2rem .55rem;
+    border-radius: 6px;
+    letter-spacing: .3px;
+}
+
+/* Periodo Label */
+.comisiones-periodo {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .6rem 1rem;
+    background: var(--surface-50);
+    border-radius: 8px;
+    border: 1px solid var(--surface-border);
+    font-size: .825rem;
+    color: var(--text-color-secondary);
+    font-weight: 500;
+    margin-bottom: 1rem;
+}
+
+.comisiones-periodo i {
+    color: var(--primary-color);
+    font-size: .9rem;
+}
+
+/* Detalle Section */
+.comisiones-detalle-section {
+    margin-top: .5rem;
+}
+
+.comisiones-detalle-title {
+    font-size: .9rem;
+    font-weight: 700;
+    color: var(--surface-900);
+    margin: 0 0 .75rem;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+.comisiones-detalle-title i {
+    color: var(--primary-color);
+}
+
+/* Ganancia column highlight */
+.comisiones-table .ganancia-cell {
+    font-weight: 700;
+    color: #059669;
+}
+
+.comisiones-table .precio-cell {
+    font-weight: 600;
+    color: var(--surface-800);
+}
+
+/* Totals row */
+.comisiones-table .fila-total td {
+    font-weight: 700;
+    background: var(--surface-50);
+    border-top: 2px solid var(--surface-border);
+    color: var(--surface-900);
+    padding-top: .75rem;
+    padding-bottom: .75rem;
+}
+
+.comisiones-table .fila-total .ganancia-cell {
+    color: #059669;
+    font-size: .95rem;
+}
+
+/* Empty state within comisiones */
+.comisiones-empty {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--text-color-secondary);
+}
+
+.comisiones-empty i {
+    font-size: 2.5rem;
+    color: var(--surface-300);
+    margin-bottom: .75rem;
+    display: block;
+}
+
+.comisiones-empty p {
+    margin: 0;
+    font-size: .9rem;
+}
+
+/* Calculate Pay button in table */
+.btn-comision {
+    padding: 0.4rem;
+    margin-right: 0.5rem;
+    background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+    border: none;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-comision:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+}
+
+.btn-comision:active {
+    transform: translateY(0);
+}
+
+/* Comisiones Modal responsive */
+@media (max-width: 640px) {
+    .comisiones-kpi-row {
+        grid-template-columns: 1fr;
+    }
+
+    .comisiones-date-group {
+        flex-direction: column;
+    }
+
+    .comisiones-header-info {
+        gap: .75rem;
+    }
+
+    .comisiones-header-icon {
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        font-size: 1.25rem;
+    }
+
+    .comisiones-header-title {
+        font-size: 1.1rem;
+    }
+
+    .modal-comisiones {
+        max-width: 100% !important;
+    }
 }

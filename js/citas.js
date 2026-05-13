@@ -150,22 +150,22 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!response.ok) throw new Error('Error al obtener las citas');
 
             const data = await response.json();
-            
+
             // 1. Actualizar variable global
             citasGlobales = data;
-            
+
             // 2. Redibujar la tabla
             dibujarTabla(citasGlobales);
-            
+
             // 3. Actualizar el Calendario (Reactividad visual)
             if (window.calendar) {
                 window.calendar.removeAllEvents();
                 window.calendar.addEventSource(citasGlobales);
             }
-            
+
             // 4. Actualizar el Dashboard en tiempo real
             actualizarTarjetasDashboard(citasGlobales);
-            
+
         } catch (error) {
             console.error(error);
             citasTableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 1rem; color: var(--red-500);">${error.message}</td></tr>`;
@@ -197,7 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (statIngresos) statIngresos.innerText = `$${ingresos.toFixed(2)}`;
         if (statCanceladas) statCanceladas.innerText = canceladas;
-        
+
         // Llama a la original por si acaso tienes otros KPIs en el backend
         if (typeof window.actualizarEstadisticas === 'function') {
             window.actualizarEstadisticas();
@@ -320,7 +320,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (window.calendar) {
                 window.calendar.removeAllEvents();
             }
-            
+
             cargarTablaCitas();
         } catch (error) {
             console.error(error);
@@ -393,7 +393,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     // Reactivar Cita
     // ==========================================
-    window.reactivarCita = async function(id) {
+    window.reactivarCita = async function (id) {
         try {
             const response = await fetch(`http://localhost:3000/api/citas/reactivar/${id}`, {
                 method: 'PUT',
@@ -404,10 +404,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Cierra el modal de Bootstrap/Personalizado si está abierto
                 const appointmentModal = document.getElementById('appointmentModal');
                 if (appointmentModal) appointmentModal.style.display = 'none';
-                
+
                 // Refresco total
                 cargarTablaCitas();
-                
+
                 // SweetAlert2 Profesional
                 Swal.fire({
                     title: 'Éxito',
@@ -416,6 +416,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     timer: 2000,
                     showConfirmButton: false
                 });
+
+                if (typeof window.cargarCitasBackend === 'function') {
+                    await window.cargarCitasBackend();
+                }
             } else {
                 Swal.fire({ title: 'Error', text: 'No se pudo reactivar la cita', icon: 'error', timer: 2000, showConfirmButton: false });
             }
@@ -453,7 +457,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 2. Estructura del Documento (Arreglo de Arreglos)
         const aoa = [
-            ["Reporte de Citas - BarberPro"],
+            ["Reporte de Citas - FlowHive"],
             [], // Fila vacía para dar respiro
             ["Resumen del Periodo:"],
             ["Total de Citas:", totalCitas],
@@ -466,18 +470,18 @@ document.addEventListener('DOMContentLoaded', () => {
         // 3. Inserción de Datos
         citasGlobales.forEach(cita => {
             const props = cita.extendedProps || cita;
-            
+
             // Extracción y limpieza de datos
             const fecha = props.fecha_formateada || props.fecha || '-';
             const hora = props.hora_inicio ? props.hora_inicio.substring(0, 5) : '-';
             const cliente = props.nombre_cliente || '-';
             const barbero = props.nombre_barbero || '-';
             const servicio = props.nombre_servicio || '-';
-            
+
             // Formateo del precio
             const precioVal = parseFloat(props.precio) || 0;
             const precioStr = "$" + precioVal.toFixed(2);
-            
+
             // Capitalizar la primera letra del estado
             const estadoStr = props.estado || 'pendiente';
             const estado = estadoStr.charAt(0).toUpperCase() + estadoStr.slice(1);
@@ -556,7 +560,7 @@ document.addEventListener('DOMContentLoaded', () => {
         XLSX.utils.book_append_sheet(libro, hoja, "Reporte");
 
         // Disparar la descarga del archivo XLSX
-        XLSX.writeFile(libro, "Reporte_Citas_BarberPro.xlsx");
+        XLSX.writeFile(libro, "Reporte_Citas_FlowHive.xlsx");
     }
 
     if (btnExportarExcel) {
@@ -579,7 +583,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const doc = new jsPDF();
 
         // 2. Agregar Título centrado
-        const title = "Reporte de Citas - BarberPro";
+        const title = "Reporte de Citas - FlowHive";
         doc.setFontSize(18);
         doc.setTextColor(40, 40, 40);
         // Calcular la coordenada X para centrar el texto
